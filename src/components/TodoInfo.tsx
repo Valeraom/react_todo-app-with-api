@@ -1,8 +1,8 @@
 import { FC, FormEvent, KeyboardEvent, useState } from 'react';
 import cn from 'classnames';
 
-import { Todo } from '../types/Todo';
-import { Loader } from './Loader';
+import { Todo } from '../types';
+import { Loader } from './index';
 
 type Props = {
   todo: Todo;

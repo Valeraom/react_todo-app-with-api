@@ -1,26 +1,31 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Todo } from '../types/Todo';
-import * as todosService from '../api/todos';
-import { getCompletedTodos } from '../utils/getCompletedTodos';
-import { getActiveTodos } from '../utils/getActiveTodos';
-import { FilterType } from '../types/FilterType';
-import { filterTodos } from '../utils/filterTodos';
+import { useEffect, useMemo, useState } from 'react';
 import debounce from 'lodash.debounce';
-import { areAllActive } from '../utils/areAllActive';
-import { areAllCompleted } from '../utils/areAllCompleted';
+
+import { Todo, FilterType, ErrorType } from '../types';
+import * as todosService from '../api/todos';
+import {
+  areAllActive,
+  areAllCompleted,
+  getCompletedTodos,
+  getActiveTodos,
+  filterTodos,
+} from '../utils';
 
 export const useTodos = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [filter, setFilter] = useState<FilterType>('All');
   const [loadingTodoIds, setLoadingTodoIds] = useState<number[]>([]);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState<ErrorType>(ErrorType.None);
 
-  const setErrorDebounced = useCallback(debounce(setErrorMessage, 3000), []);
+  const setErrorDebounced = useMemo(
+    () => debounce(error => setErrorMessage(error), 3000),
+    [],
+  );
 
-  const handleAddError = (error: string) => {
+  const handleAddError = (error: ErrorType) => {
     setErrorMessage(error);
-    setErrorDebounced('');
+    setErrorDebounced(ErrorType.None);
   };
 
   const addTodo = (newTodo: Omit<Todo, 'id'>) => {
@@ -35,7 +40,7 @@ export const useTodos = () => {
         setTodos(currentTodos => [...currentTodos, todo]);
       })
       .catch((error: Error) => {
-        handleAddError('Unable to add a todo');
+        handleAddError(ErrorType.Adding);
 
         throw error;
       })
@@ -56,7 +61,7 @@ export const useTodos = () => {
         setTodos(current => current.filter(todo => todo.id !== todoId)),
       )
       .catch((error: Error) => {
-        handleAddError('Unable to delete a todo');
+        handleAddError(ErrorType.Deleting);
 
         throw error;
       })
@@ -92,7 +97,7 @@ export const useTodos = () => {
         });
       })
       .catch((error: Error) => {
-        handleAddError('Unable to update a todo');
+        handleAddError(ErrorType.Updating);
 
         throw error;
       })
@@ -134,7 +139,7 @@ export const useTodos = () => {
     todosService
       .getTodos()
       .then(setTodos)
-      .catch(() => handleAddError('Unable to load todos'));
+      .catch(() => handleAddError(ErrorType.Loading));
   };
 
   useEffect(loadTodos, []);
