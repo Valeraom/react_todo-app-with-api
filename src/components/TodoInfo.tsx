@@ -68,6 +68,7 @@ export const TodoInfo: FC<Props> = ({
 
   const handleKeyUp = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Escape') {
+      setUpdatedTitle(title);
       setIsEditing(false);
     }
   };
